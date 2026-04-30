@@ -190,7 +190,79 @@ def handle_edit_menu(cafe_items):
  
         else:
             print("Invalid edit menu choice.")
+
+
+##Couriers menu:
+
+# execute courier
+# create courier
+# update courier
+# delete courier             
  
+##Couriers
+# Courier name - string
+# get_name - string - handled by "view all couriers?"
+# set_name - handled by "update courier name"
+
+#list of all couriers
+#done in ephemeral memory first
+couriers = []
+
+def handle_courier_menu():
+    print("\n--- Courier Management Menu ---")
+    print("1. View all couriers")
+    print("2. Add a new courier")
+    print("3. Update a courier name")
+    print("4: Delete existing courier")
+    print("0. Exit")
+
+    while True:
+        handle_courier_menu()
+        choice = input("\nPlease select: ")
+        if choice == "1":
+            # View Couriers
+            print("\nCurrent Couriers:")
+            for index, name in enumerate(couriers):
+                print(f"{index}: {name}")
+
+        elif choice == "2":
+            # Add Courier
+            new_name = input("Enter new courier name: ").strip()
+            if new_name:
+                couriers.append(new_name)
+                print(f"'{new_name}' added successfully.")
+            else:
+                print("Name cannot be empty.")
+
+        elif choice == "3":
+            # Update Courier
+            print("\nSelect a courier to update:")
+            for index, name in enumerate(couriers):
+                print(f"{index}: {name}")
+            
+            try:
+                index_input = int(input("Enter the index of the courier to change: "))
+                updated_name = input("Enter the new name: ").strip()
+                
+                if updated_name:
+                    # old name kept in memory temporarily for the updated name output
+                    old_name = couriers[index_input]
+                    couriers[index_input] = updated_name
+                    print(f"Updated '{old_name}' to '{updated_name}'.")
+                else:
+                    print("Update failed: New name cannot be empty.")
+                    
+            except (ValueError, IndexError):
+                print("Invalid selection. Please enter a valid index number.")
+
+        elif choice == "0":
+            print("Returning to root menu ")
+            break
+
+        else:
+            print("Illegal courier activity detected. Retry? ")
+
+
 ################# ORDER FUNCTIONS #################
 # List to store all orders
 orders = []
