@@ -30,7 +30,7 @@ class CafeApp:
         couriers = utils.load_data('couriers.csv')
         orders = utils.load_data('orders.csv')
         menus_data = utils.load_json('Menus.json')
-        menus_data = utils.load_json('Menus.json')
+ 
         # menus_names = menus_data.keys()
         # for name in menus_names:
         #     print(f"Menu name: {name}")
