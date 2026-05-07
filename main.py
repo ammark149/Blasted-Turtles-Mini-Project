@@ -86,12 +86,14 @@ class Menu:
     
     def get_choice(self):
         valid_options = {k for k in self.menu_dict.keys() if k != "title"}
+        
         while True:
             choice = input("Select option: ").strip()
             if choice in valid_options:
                 return choice
+            
             print(f"Invalid choice. Enter one of: {', '.join(sorted(valid_options, key=int))}")
-            self.display()  # Re-display menu after invalid choice
+            self.display()
     
     def handle(self, name=None):
         self.display()
