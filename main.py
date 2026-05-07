@@ -23,38 +23,37 @@ class CafeApp:
         self.order_management_menu = None
         self.order_edit_menu = None
 
-    
     def run(self):
-        #Importing csv files and menu json
+        # Importing csv files and menu json
         self.products = utils.load_data('products.csv')
         self.couriers = utils.load_data('couriers.csv')
         self.orders = utils.load_data('orders.csv')
         menus_data = utils.load_json('Menus.json')
-        # menus_names = menus_data.keys()
-        # for name in menus_names:
-        #     print(f"Menu name: {name}")
 
-        # Default to a standard Menu if the key isn't in the mapping
         for name_id, menu_dict in menus_data.items():
             self.menus[name_id] = Menu(menu_dict, name=menu_dict.get('title', name_id)) 
-    
 
-
-        #Define Child Menus
+        # Initialize Child Menus
         self.main_menu = MainMenu(self.menus['MainMenu'].menu_dict, name=self.menus['MainMenu'].name) 
         self.product_menu = ProductMenu(self.menus['ProductMenu'].menu_dict, name=self.menus['ProductMenu'].name)
         self.basket_menu = BasketMenu(self.menus['BasketMenu'].menu_dict, name=self.menus['BasketMenu'].name)
         self.product_edit_menu = ProductEditMenu(self.menus['ProductEditMenu'].menu_dict, name=self.menus['ProductEditMenu'].name)
         self.order_management_menu = OrderManagementMenu(self.menus['OrderManagementMenu'].menu_dict, name=self.menus['OrderManagementMenu'].name)
+        self.order_edit_menu = Menu(self.menus['OrderEditMenu'].menu_dict, name=self.menus['OrderEditMenu'].name)
 
         while True:
             choice = self.main_menu.handle() 
-            #Saves Data if Exit option is selected
+            
             if choice == "0":
                 utils.save_data('orders.csv', self.orders)
                 print("Data saved. Goodbye!")
                 break
-            
+            elif choice == "1":
+                self.product_menu.handle()
+            elif choice == "2":
+                self.basket_menu.handle()
+            elif choice == "3":
+                self.product_edit_menu.handle()
             elif choice == "5": 
                 self.order_management_menu.handle(self)
 
@@ -243,6 +242,21 @@ class OrderManagementMenu(Menu):
             elif choice == "5": #Delete Orders
                 self.delete_order(app_instance)
 
+    # Choice 1 Viewing Orders
+    def view_orders(self, app_instance):
+        print("\n--- Current Orders ---")
+        if not app_instance.orders:
+            print("No orders found.")
+            return
+            
+        for i, order in enumerate(app_instance.orders):
+            print(f"[{i}] Customer: {order['customer_name']}")
+            print(f"    Address: {order['customer_address']}")
+            print(f"    Phone: {order['customer_phone']}")
+            print(f"    Courier Index: {order['courier']}")
+            print(f"    Status: {order['status']}")
+            print(f"    Items: {order['items']}\n")
+
     #Choice 2 Creating Orders
     def create_order(self, app_instance):
         print("\n--- Create New Order ---")
@@ -295,15 +309,29 @@ class OrderManagementMenu(Menu):
         for i, order in enumerate(app_instance.orders):
             print(f"[{i}] {order['customer_name']}")
         
-        order_idx = int(input("Select order index to edit: "))
-        selected_order = app_instance.orders[order_idx]
-
-        for key, value in selected_order.items():
-            if key == "status": continue 
-            new_val = input(f"Enter new {key} (Current: {value}) [Leave blank to keep]: ")
-            if new_val.strip() != "":
-                selected_order[key] = new_val
-        print("Order updated!")
+        try:
+            order_idx = int(input("Select order index to edit: "))
+            selected_order = app_instance.orders[order_idx]
+            
+            while True:
+                choice = app_instance.order_edit_menu.handle() 
+                
+                if choice == "0": # Finish Editing
+                    break
+                elif choice == "1":
+                    selected_order['customer_name'] = input("Enter new name: ")
+                elif choice == "2":
+                    selected_order['customer_address'] = input("Enter new address: ")
+                elif choice == "3":
+                    selected_order['customer_phone'] = input("Enter new phone: ")
+                elif choice == "4":
+                    statuses = ["preparing", "ready", "out for delivery", "delivered"]
+                    for i, stat in enumerate(statuses): print(f"[{i}] {stat}")
+                    stat_idx = int(input("Select status index: "))
+                    selected_order['status'] = statuses[stat_idx]
+            print("Order updated!")
+        except (ValueError, IndexError):
+            print("Invalid selection.")
     
     #Choice 5 Deleting Orders
     def delete_order(self, app_instance):
