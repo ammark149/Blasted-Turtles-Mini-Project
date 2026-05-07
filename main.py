@@ -51,11 +51,13 @@ class CafeApp:
             elif choice == "1":
                 self.product_menu.handle()
             elif choice == "2":
-                self.basket_menu.handle()
+                self.basket_menu.handle() 
             elif choice == "3":
-                self.product_edit_menu.handle()
+                self.product_edit_menu.handle() 
             elif choice == "5": 
-                self.order_management_menu.handle(self)
+                self.order_management_menu.handle(self) 
+            else:
+                print(f"Option {choice} is recognized but not yet linked to a function.")
 
    
      
