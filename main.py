@@ -30,7 +30,6 @@ class CafeApp:
         couriers = utils.load_data('couriers.csv')
         orders = utils.load_data('orders.csv')
         menus_data = utils.load_json('Menus.json')
- 
         # menus_names = menus_data.keys()
         # for name in menus_names:
         #     print(f"Menu name: {name}")
@@ -229,7 +228,104 @@ class ProductEditMenu(Menu):
 #         else:
 #             print("Invalid edit menu choice.")
 class OrderManagementMenu(Menu):
-    pass
+    def handle(self, app_instance):
+        while True:
+            self.display()
+            choice = self.get_choice()
+
+            if choice == "0":
+                break
+            elif choice == "1": #View orders
+                self.view_orders(app_instance)
+            elif choice == "2": #Create Orders
+                self.create_order(app_instance)
+            elif choice == "3": #Update Existing Orders' status
+                self.update_order_status(app_instance)
+            elif choice == "4": #Edit Orders
+                self.edit_order(app_instance)
+            elif choice == "5": #Delete Orders
+                self.delete_order(app_instance)
+
+    #Choice 2 Creating Orders
+    def create_order(self, app_instance):
+        print("\n--- Create New Order ---")
+        cust_name = input("Customer Name: ")
+        cust_address = input("Customer Address: ")
+        cust_phone = input("Customer Phone: ")
+    
+        #Print products with index
+        print("\nAvailable Products:")
+        for i, prod in enumerate(app_instance.products):
+            print(f"[{i}] {prod['name']}")
+        items = input("Enter product indexes (e.g. 1,2,5): ")
+
+        #Print couriers with index
+        print("\nAvailable Couriers:")
+        for i, cour in enumerate(app_instance.couriers):
+            print(f"[{i}] {cour['name']}")
+        courier_idx = input("Select courier index: ")
+
+        #Create dictionary and append
+        new_order = {
+            "customer_name": cust_name,
+            "customer_address": cust_address,
+            "customer_phone": cust_phone,
+            "courier": courier_idx,
+            "status": "preparing",
+            "items": items
+        }
+        app_instance.orders.append(new_order)
+        print("Order created successfully!")
+
+    #Choice 3 Updating Order Status
+    def update_order_status(self, app_instance):
+        for i, order in enumerate(app_instance.orders):
+            print(f"[{i}] {order['customer_name']} - {order['status']}")
+        
+        order_idx = int(input("Select order index to update: "))
+        
+        #Shows status for orders
+        statuses = ["preparing", "ready", "out for delivery", "delivered"]
+        for i, stat in enumerate(statuses):
+            print(f"[{i}] {stat}")
+        
+        stat_idx = int(input("Select new status index: "))
+        app_instance.orders[order_idx]['status'] = statuses[stat_idx]
+        print("Status updated!")
+    
+    #Choice 4 Editing Orders
+    def edit_order(self, app_instance):
+        for i, order in enumerate(app_instance.orders):
+            print(f"[{i}] {order['customer_name']}")
+        
+        order_idx = int(input("Select order index to edit: "))
+        selected_order = app_instance.orders[order_idx]
+
+        for key, value in selected_order.items():
+            if key == "status": continue 
+            new_val = input(f"Enter new {key} (Current: {value}) [Leave blank to keep]: ")
+            if new_val.strip() != "":
+                selected_order[key] = new_val
+        print("Order updated!")
+    
+    #Choice 5 Deleting Orders
+    def delete_order(self, app_instance):
+        print("\n--- Delete Order ---")
+        
+        if not app_instance.orders:
+            print("No orders to delete.")
+            return
+
+        for i, order in enumerate(app_instance.orders):
+            print(f"[{i}] {order['customer_name']} - {order['status']}")
+
+        try:
+            order_idx = int(input("\nEnter order index to delete: "))
+            deleted_order = app_instance.orders.pop(order_idx)
+            print(f"Successfully deleted order for: {deleted_order['customer_name']}")
+            
+        except (ValueError, IndexError):
+            print("Invalid index. No order was deleted.")
 
 # # View all orders in orders.txt
 # # Displays all orders with their details to the console
