@@ -26,9 +26,9 @@ class CafeApp:
     
     def run(self):
         #Importing csv files and menu json
-        products = utils.load_data('products.csv')
-        couriers = utils.load_data('couriers.csv')
-        orders = utils.load_data('orders.csv')
+        self.products = utils.load_data('products.csv')
+        self.couriers = utils.load_data('couriers.csv')
+        self.orders = utils.load_data('orders.csv')
         menus_data = utils.load_json('Menus.json')
         # menus_names = menus_data.keys()
         # for name in menus_names:
@@ -99,6 +99,7 @@ class Menu:
 
 
 class MainMenu(Menu):
+    pass
         # print(f"Main menu choice: {choice}")
         # if choice == "0":
         #     print("Goodbye.")
