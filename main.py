@@ -51,14 +51,13 @@ class CafeApp:
             elif choice == "1":
                 self.product_menu.handle()
             elif choice == "2":
-                self.basket_menu.handle() 
+                print("Add product logic goes here") 
             elif choice == "3":
-                self.product_edit_menu.handle() 
+                self.product_edit_menu.handle()
+            elif choice == "4":
+                self.basket_menu.handle()
             elif choice == "5": 
-                self.order_management_menu.handle(self) 
-            else:
-                print(f"Option {choice} is recognized but not yet linked to a function.")
-
+                self.order_management_menu.handle(self)
    
      
 
@@ -318,7 +317,7 @@ class OrderManagementMenu(Menu):
             while True:
                 choice = app_instance.order_edit_menu.handle() 
                 
-                if choice == "0": # Finish Editing
+                if choice == "0": 
                     break
                 elif choice == "1":
                     selected_order['customer_name'] = input("Enter new name: ")
