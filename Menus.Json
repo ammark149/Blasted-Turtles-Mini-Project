@@ -32,11 +32,13 @@
     },
     "OrderManagementMenu": {
         "title": "ORDER MANAGEMENT",
-        "1": "Create Order",
-        "2": "View Orders",
-        "3": "Edit Order",
-        "4": "Delete Order",
+        "1": "View Orders",
+        "2": "Create Order",
+        "3": "Update Order Status",
+        "4": "Edit Order",
+        "5": "Delete Order",
         "0": "Back to main menu"
+
     },
     "OrderEditMenu": {
         "title": "EDIT ORDER",
