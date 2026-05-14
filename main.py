@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Mini project CLI: cafe menu and basket management"""
-
+import os
 import json
 import utils
 
@@ -49,11 +49,11 @@ class CafeApp:
                 print("Data saved. Goodbye!")
                 break
             elif choice == "1":
-                self.product_menu.handle()
+                self.product_menu.handle(self)
             elif choice == "2":
                 print("Add product logic goes here") 
             elif choice == "3":
-                self.product_edit_menu.handle()
+                self.product_edit_menu.handle(self)
             elif choice == "4":
                 self.basket_menu.handle()
             elif choice == "5": 
@@ -117,8 +117,41 @@ class MainMenu(Menu):
         # elif choice == "5":
         #     self.order_edit_menu.handle()
 
+########## Product Menu ###########
 class ProductMenu(Menu):
-    pass
+    def handle(self, app_instance=None):
+        while True:
+            self.display()
+            choice = self.get_choice()
+
+            if choice == "0":
+                break
+            elif choice == "1":
+                self._view_products(app_instance)
+            elif choice == "2":
+                self._create_product(app_instance)
+
+    def _view_products(self, app_instance):
+        if not app_instance.products:
+            print("No products found.")
+            return
+        print("\n--- Products ---")
+        for i, product in enumerate(app_instance.products):
+            print(f"  [{i}] {product['name']}")
+
+    def _create_product(self, app_instance):
+        name = input("Enter new product name: ").strip()
+        if name:
+            app_instance.products.append({"name": name})
+            print(f"'{name}' added.")
+        else:
+            print("Product name cannot be empty.")
+
+
+
+
+
+
 # def display_items(items, title):
 #     """Display a list of items with indices."""
 #     print(f"\n{title}:")
@@ -176,7 +209,65 @@ class BasketMenu(Menu):
 #                 basket.clear()
 #                 print("Basket Cleared.")
 class ProductEditMenu(Menu):
-    pass
+    def handle(self, app_instance=None):
+        while True:
+            self.display()
+            choice = self.get_choice()
+
+            if choice == "0":
+                break
+            elif choice == "1":
+                self._update_product(app_instance)
+            elif choice == "2":
+                self._delete_product(app_instance)
+
+    def _view_products(self, app_instance):
+        if not app_instance.products:
+            print("No products found.")
+            return
+        print("\n--- Products ---")
+        for i, product in enumerate(app_instance.products):
+            print(f"  [{i}] {product['name']}")
+
+    def _update_product(self, app_instance):
+        self._view_products(app_instance)
+        try:
+            index = int(input("Enter index of product to update: "))
+            if 0 <= index < len(app_instance.products):
+                new_name = input("Enter new product name: ").strip()
+                if new_name:
+                    app_instance.products[index]['name'] = new_name
+                    print(f"Product updated to '{new_name}'.")
+                else:
+                    print("Name cannot be empty.")
+            else:
+                print("Invalid index.")
+        except ValueError:
+            print("Please enter a valid number.")
+
+    def _delete_product(self, app_instance):
+        self._view_products(app_instance)
+        try:
+            index = int(input("Enter index of product to delete: "))
+            if 0 <= index < len(app_instance.products):
+                removed = app_instance.products.pop(index)
+                print(f"'{removed['name']}' deleted.")
+            else:
+                print("Invalid index.")
+        except ValueError:
+            print("Please enter a valid number.")
+
+
+
+
+
+
+
+
+
+
+
+
 # def handle_add_item(cafe_items):
 #     """Handle adding a new unique item to the cafe menu."""
 #     new_item = input("Enter new cafe item name: ").strip()
@@ -362,5 +453,6 @@ class OrderManagementMenu(Menu):
 if __name__ == "__main__":
     app = CafeApp()
     app.run()
+
 
 
