@@ -1,9 +1,6 @@
---Creates database.
-CREATE DATABASE miniproject;
-
 --Creates tables.
 ---Products table.
-CREATE TABLE products (
+CREATE TABLE IF NOT EXISTS products (
 id 
 INT 
 PRIMARY KEY,
@@ -14,7 +11,7 @@ float
 );
 
 ---Couriers table.
-CREATE TABLE couriers (
+CREATE TABLE IF NOT EXISTS couriers (
 id 
 INT 
 PRIMARY KEY,
