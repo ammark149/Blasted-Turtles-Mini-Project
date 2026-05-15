@@ -86,7 +86,7 @@ Get-Content "$env:USERPROFILE\.ssh\mini_project_key.pub" | ssh centos@<YOUR_CENT
 
 We now want edit the config file in the .ssh directory, on Windows that's:
 
-C:\Users\Username\.ssh\config
+C:\Users\Username\\.ssh\config
 
 Inside the config file add this block:
 
