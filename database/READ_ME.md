@@ -48,9 +48,9 @@ POSTGRES_DB=mini_project_db
 POSTGRES_PASSWORD=<SET_YOUR_POSTGRES_PASSWORD_HERE>
 ```
 
-## Setup SSH key
+## Setup SSH key (Local Computer)
 
-We need an ssh key that does not require a passphrase. If you run this and it already exists **do not** overwrite it.
+Now on your local computer that you use to ssh into your vm instance. We need an ssh key that does not require a passphrase. If you run this and it already exists **do not** overwrite it.
 
 We are creating an ssh key specifically for our project so it should not mess with your other ssh keys.
 
