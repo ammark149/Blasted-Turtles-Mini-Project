@@ -24,6 +24,10 @@ services:
       - "5432:5432"
     environment:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+   
     volumes:
       - postgres_data:/var/lib/postgresql
 
@@ -40,6 +44,8 @@ volumes:
 
 ## .env file
 
+<mark>You will need a copy of this file in both your remote directory (/home/centos/mini_porject/.env) **and** your local directory (./Blasted-Turtles-Mini-Project/database/.env)</mark>
+
 ```
 POSTGRES_HOST=<YOUR_CENTOS_VM_IP_HERE>
 DB_PORT=5432
@@ -47,6 +53,8 @@ POSTGRES_USER=<SET_YOUR_POSTGRES_USERNAME_HERE>
 POSTGRES_DB=mini_project_db
 POSTGRES_PASSWORD=<SET_YOUR_POSTGRES_PASSWORD_HERE>
 ```
+
+**Note** if your chosen password is/has numbers, they need to be wrapped in quotation marks. eg. POSTGRES_PASSWORD="123"
 
 ## Setup SSH key (Local Computer)
 
@@ -104,4 +112,6 @@ SSH into your remote server instance to see if it worked. Use:
 ssh miniproject-server
 ```
 
-If that worked... Yay! You're all setup! You can now run remote_setup.py to automatically setup your database!
+If that worked... Yay! You're all setup! You can now run* setup.py to automatically setup your database!
+
+*Make sure you have the additional python packages outlined in requirements.txt installed.
