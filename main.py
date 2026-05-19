@@ -2,6 +2,7 @@
 """Mini project CLI: cafe menu and basket management"""
 import os
 import json
+from secrets import choice
 import utils
 
 
@@ -34,40 +35,29 @@ class CafeApp:
             self.menus[name_id] = Menu(menu_dict, name=menu_dict.get('title', name_id)) 
 
         # Initialize Child Menus
-        self.main_menu = MainMenu(self.menus['MainMenu'].menu_dict, name=self.menus['MainMenu'].name) 
-        self.product_menu = ProductMenu(self.menus['ProductMenu'].menu_dict, name=self.menus['ProductMenu'].name)
-        self.basket_menu = BasketMenu(self.menus['BasketMenu'].menu_dict, name=self.menus['BasketMenu'].name)
-        self.product_edit_menu = ProductEditMenu(self.menus['ProductEditMenu'].menu_dict, name=self.menus['ProductEditMenu'].name)
-        self.order_management_menu = OrderManagementMenu(self.menus['OrderManagementMenu'].menu_dict, name=self.menus['OrderManagementMenu'].name)
-        self.order_edit_menu = Menu(self.menus['OrderEditMenu'].menu_dict, name=self.menus['OrderEditMenu'].name)
+        self.main_menu = MainMenu(self.menus['MainMenu'].menu_dict, name=self.menus['MainMenu'].name, app=self)
+        self.product_menu = ProductMenu(self.menus['ProductMenu'].menu_dict, name=self.menus['ProductMenu'].name, app=self)
+        self.order_management_menu = OrderManagementMenu(self.menus['OrderManagementMenu'].menu_dict, name=self.menus['OrderManagementMenu'].name, app=self)
+        self.order_edit_menu = Menu(self.menus['OrderEditMenu'].menu_dict, name=self.menus['OrderEditMenu'].name, app=self)
 
         while True:
-            choice = self.main_menu.handle() 
-            
-            if choice == "0":
-                utils.save_data('orders.csv', self.orders)
-                print("Data saved. Goodbye!")
-                break
-            elif choice == "1":
-                self.product_menu.handle(self)
-            elif choice == "2":
-                print("Add product logic goes here") 
-            elif choice == "3":
-                self.product_edit_menu.handle(self)
-            elif choice == "4":
-                self.basket_menu.handle()
-            elif choice == "5": 
-                self.order_management_menu.handle(self)
-   
+            self.main_menu.handle()
+            break
+        ## TO DO - Save chnages to products and couriers back to csv files when exiting
+        utils.save_data('orders.csv', self.orders)
+        print("Data saved. Goodbye!")
+        
      
 
 
 ############### MENU #################
 class Menu:
-    def __init__(self, menu_dict=None, name=None):
+    def __init__(self, menu_dict=None, name=None, app=None):
+          
         self.name = name
         self.menu_dict = menu_dict or {}
         self.title = self.menu_dict.get("title", "Menu")
+        self.app = app
 
     def __str__(self):
         result = "" 
@@ -96,26 +86,34 @@ class Menu:
             self.display()
     
     def handle(self, name=None):
-        self.display()
-        return self.get_choice()
-
+        while True:
+            self.display()
+            choice = self.get_choice()
+            if choice == "0":
+                return
+            self.route(choice)
+    
+    def route(self, choice):
+        print(f"Selected option {choice} - {self.menu_dict.get(choice, 'Unknown Option')}")
 
 class MainMenu(Menu):
     pass
-        # print(f"Main menu choice: {choice}")
-        # if choice == "0":
-        #     print("Goodbye.")
-        #     #1break
-        # elif choice == "1":
-        #     self.product_menu.handle()
-        # elif choice == "2":
-        #     self.basket_menu.handle()
-        # elif choice == "3":
-        #     self.product_edit_menu.handle()
-        # elif choice == "4":
-        #     self.order_management_menu.handle()
-        # elif choice == "5":
-        #     self.order_edit_menu.handle()
+    def handle(self, name=None):
+    #     pass
+        while True:
+            self.display()
+            choice = self.get_choice()
+            if choice == "0":
+                return
+            self.route(choice)
+
+    def route(self, choice):
+            if choice == "1":
+                self.app.product_menu.handle(self.app)
+            elif choice == "2":
+                self.app.courier_menu.handle(self.app)
+            elif choice == "3":
+                self.app.order_management_menu.handle(self.app)
 
 ########## Product Menu ###########
 class ProductMenu(Menu):
@@ -130,6 +128,10 @@ class ProductMenu(Menu):
                 self._view_products(app_instance)
             elif choice == "2":
                 self._create_product(app_instance)
+            elif choice == "3":
+                self._update_product(app_instance)
+            elif choice == "4":
+                self._delete_product(app_instance)
 
     def _view_products(self, app_instance):
         if not app_instance.products:
@@ -146,88 +148,6 @@ class ProductMenu(Menu):
             print(f"'{name}' added.")
         else:
             print("Product name cannot be empty.")
-
-
-
-
-
-
-# def display_items(items, title):
-#     """Display a list of items with indices."""
-#     print(f"\n{title}:")
-#     if not items:
-#         print("(none)")
-#     else:
-#         for idx, item in enumerate(items):
-#             print(f"{idx}: {item}")
-
-# def handle_cafe_menu(cafe_items, basket):
-#     """Handle the cafe menu for ordering."""
-#     while True:
-#         print_cafe_menu(cafe_items)
-#         if not cafe_items:
-#             choice = get_choice("No items to select, enter 0 to return", {"0"})
-#             if choice == "0":
-#                 break
-#             continue
- 
-#         selected = get_numeric_choice("Select item number to add to basket", 0, len(cafe_items))
-#         if selected == 0:
-#             break
- 
-#         item = cafe_items[selected - 1]
-#         if confirm(f"Add '{item}' to basket? (y/n)"):
-#             basket.append(item)
-#             print(f"'{item}' added to basket.")
-#         else:
-#             print("Not added.")
-class BasketMenu(Menu):
-    pass
-
-# def handle_basket_menu(basket):
-#     while True:
-#         print_basket_menu()
-#         choice = get_choice("Select main option", {"0", "1", "2", "3"})
-
-#         if choice == "0":
-#             break
- 
-#         elif choice == "1":
-#             display_items(basket, "Items in your basket")
- 
-#         elif choice == "2":
-#             if not basket:
-#                 print("Your basket is empty")
-#                 continue
-#             display_items(basket, "Select item to remove")
-#             idx = get_numeric_choice("Enter collerating index to remove", 0, len(basket) -1)  
-#             removed = basket.pop(idx)
-#             print(f"Removed '{removed}' from your basket.")  
- 
-#         elif choice == "3":
-#             if confirm("Are you you want to clear the entire basket? (y/n)"):
-#                 basket.clear()
-#                 print("Basket Cleared.")
-class ProductEditMenu(Menu):
-    def handle(self, app_instance=None):
-        while True:
-            self.display()
-            choice = self.get_choice()
-
-            if choice == "0":
-                break
-            elif choice == "1":
-                self._update_product(app_instance)
-            elif choice == "2":
-                self._delete_product(app_instance)
-
-    def _view_products(self, app_instance):
-        if not app_instance.products:
-            print("No products found.")
-            return
-        print("\n--- Products ---")
-        for i, product in enumerate(app_instance.products):
-            print(f"  [{i}] {product['name']}")
 
     def _update_product(self, app_instance):
         self._view_products(app_instance)
@@ -257,66 +177,9 @@ class ProductEditMenu(Menu):
         except ValueError:
             print("Please enter a valid number.")
 
-
-
-
-
-
-
-
-
-
-
-
-# def handle_add_item(cafe_items):
-#     """Handle adding a new unique item to the cafe menu."""
-#     new_item = input("Enter new cafe item name: ").strip()
-#     if new_item:
-#         if new_item in cafe_items:
-#             print(f"'{new_item}' is already in the cafe menu.")
-#         else:
-#             cafe_items.append(new_item)
-#             print(f"'{new_item}' added to cafe menu.")
-#     else:
-#         print("No item name entered.")
- 
- 
-# def handle_edit_menu(cafe_items):
-#     """Handle the edit menu for updating or removing items."""
-#     while True:
-#         print_edit_menu()
-#         edit_choice = input("Select edit option: ").strip()
- 
-#         if edit_choice == "0":
-#             break
- 
-#         elif edit_choice == "1":
-#             if not cafe_items:
-#                 print("No items to update.")
-#                 continue
-#             display_items(cafe_items, "Current cafe items")
-#             idx = get_numeric_choice("Enter index to update", 0, len(cafe_items) - 1)
-#             new_name = input("Enter new name: ").strip()
-#             if new_name:
-#                 old_name = cafe_items[idx]
-#                 cafe_items[idx] = new_name
-#                 print(f"Updated '{old_name}' to '{new_name}'")
-#             else:
-#                 print("No new name entered.")
- 
-#         elif edit_choice == "2":
-#             if not cafe_items:
-#                 print("No items to remove.")
-#                 continue
-#             display_items(cafe_items, "Current cafe items")
-#             idx = get_numeric_choice("Enter index to remove", 0, len(cafe_items) - 1)
-#             removed = cafe_items.pop(idx)
-#             print(f"Removed '{removed}' from cafe menu.")
- 
-#         else:
-#             print("Invalid edit menu choice.")
+####### Order Management Menu ##########
 class OrderManagementMenu(Menu):
-    def handle(self, app_instance):
+    def handle(self, app_instance=None):
         while True:
             self.display()
             choice = self.get_choice()
