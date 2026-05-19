@@ -269,7 +269,8 @@ class OrderManagementMenu(Menu):
             selected_order = app_instance.orders[order_idx]
             
             while True:
-                choice = app_instance.order_edit_menu.handle() 
+                app_instance.order_edit_menu.display()
+                choice = app_instance.order_edit_menu.get_choice()
                 
                 if choice == "0": 
                     break
