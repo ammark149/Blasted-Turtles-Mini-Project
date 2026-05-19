@@ -23,7 +23,6 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
@@ -44,8 +43,6 @@ volumes:
 
 ## .env file
 
-<mark>You will need a copy of this file in both your remote directory (/home/centos/mini_porject/.env) **and** your local directory (./Blasted-Turtles-Mini-Project/database/.env)</mark>
-
 ```
 POSTGRES_HOST=<YOUR_CENTOS_VM_IP_HERE>
 DB_PORT=5432
@@ -56,6 +53,19 @@ POSTGRES_PASSWORD=<SET_YOUR_POSTGRES_PASSWORD_HERE>
 
 **Note** if your chosen password is/has numbers, they need to be wrapped in quotation marks. eg. POSTGRES_PASSWORD="123"
 
+## .env file (Local Computer)
+
+The details inside of this .env file are the same as the above remote .env file **apart from** the additional variables <mark>REMOTE_HOST</mark> and <mark>REMOTE_USER</mark>. This file should be in your database directory on your local computer (./Blasted-Turtles-Mini-Project/database/.env). <mark>DO NOT UPLOAD YOUR .env FILE!</mark>
+
+```
+REMOTE_HOST=miniproject-server
+REMOTE_USER=centos
+POSTGRES_HOST=<YOUR_CENTOS_VM_IP_HERE>
+DB_PORT=5432
+POSTGRES_USER=<YOUR_POSTGRES_USERNAME_HERE>
+POSTGRES_DB=mini_project_db
+POSTGRES_PASSWORD=<YOUR_POSTGRES_PASSWORD_HERE>
+```
 ## Setup SSH key (Local Computer)
 
 Now on your local computer that you use to ssh into your vm instance. We need an ssh key that does not require a passphrase. If you run this and it already exists **do not** overwrite it.
