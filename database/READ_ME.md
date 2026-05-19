@@ -23,7 +23,6 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
@@ -44,7 +43,7 @@ volumes:
 
 ## .env file
 
-<mark>You will need a copy of this file in both your remote directory (/home/centos/mini_porject/.env) **and** your local directory (./Blasted-Turtles-Mini-Project/database/.env)</mark>
+<mark>You will need a copy of this file in both your remote directory (/home/centos/mini_project/.env) **and** your local directory (./Blasted-Turtles-Mini-Project/database/.env)</mark>
 
 ```
 POSTGRES_HOST=<YOUR_CENTOS_VM_IP_HERE>
