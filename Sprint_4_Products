@@ -1,0 +1,144 @@
+import os
+import csv
+
+# Load products from a CSV file into a list of dicts.
+# If the file doesn't exist yet, return an empty list.
+def load_products(filename="products.csv"):
+    if not os.path.exists(filename):
+        return []
+    products = []
+    with open(filename, newline="") as f:
+        # DictReader maps each row to a dict using the header row as keys
+        reader = csv.DictReader(f)
+        for row in reader:
+            products.append({
+                "name": row["name"],
+                "price": float(row["price"])  # convert string to float
+            })
+    return products
+
+# Save the current products list back to the CSV file.
+# This overwrites the file each time so it always reflects the latest data.
+def save_products(filename, products):
+    with open(filename, "w", newline="") as f:
+        # DictWriter writes each dict as a row, with a header line at the top
+        writer = csv.DictWriter(f, fieldnames=["name", "price"])
+        writer.writeheader()
+        for product in products:
+            writer.writerow(product)
+
+# ProductMenu handles all user interaction for the product section.
+# It holds a reference to the products list so any changes made inside
+# the menu are reflected outside it too.
+class ProductMenu:
+    def __init__(self, products):
+        self.products_ref = products
+
+    # Main loop — keeps showing the menu until the user chooses to go back.
+    def execute(self):
+        while True:
+            print("\n--- Product Menu ---")
+            print("  0: Return to main menu")
+            print("  1: View all products")
+            print("  2: Add a new product")
+            print("  3: Update a product")
+            print("  4: Delete a product")
+
+            choice = input("\nEnter option: ").strip()
+
+            if choice == "0":
+                return  # exit the loop and go back to main menu
+            elif choice == "1":
+                self._print_products()
+            elif choice == "2":
+                self._create_product()
+            elif choice == "3":
+                self._update_product()
+            elif choice == "4":
+                self._delete_product()
+            else:
+                print("Invalid option.")
+
+    # Display all products with their index, name, and price.
+    def _print_products(self):
+        if not self.products_ref:
+            print("No products found.")
+            return
+        print("\n--- Products ---")
+        for i, product in enumerate(self.products_ref):
+            print(f"  {i}: {product['name']} - £{product['price']:.2f}")
+
+    # Ask the user for a name and price, then add a new product dict to the list.
+    def _create_product(self):
+        name = input("Enter product name: ").strip()
+        if not name:
+            print("Product name cannot be empty.")
+            return
+        try:
+            price = float(input("Enter product price: ").strip())
+        except ValueError:
+            print("Invalid price. Please enter a number.")
+            return
+
+        self.products_ref.append({"name": name, "price": price})
+        print(f"'{name}' added at £{price:.2f}.")
+
+    # Let the user pick a product by index and update any of its fields.
+    # Leaving a field blank skips it and keeps the current value.
+    def _update_product(self):
+        self._print_products()
+        if not self.products_ref:
+            return
+        try:
+            index = int(input("Enter index of product to update: ").strip())
+            if not (0 <= index < len(self.products_ref)):
+                print("Invalid index.")
+                return
+        except ValueError:
+            print("Please enter a valid number.")
+            return
+
+        product = self.products_ref[index]
+
+        # Loop over each field — if the user leaves input blank, skip that field
+        for key in ("name", "price"):
+            current = product[key]
+            new_val = input(f"  {key} [{current}] (leave blank to keep): ").strip()
+            if new_val == "":
+                continue
+            if key == "price":
+                try:
+                    product[key] = float(new_val)  # validate price is a number
+                except ValueError:
+                    print(f"  Invalid price — keeping '{current}'.")
+            else:
+                product[key] = new_val
+
+        print("Product updated.")
+
+    # Let the user pick a product by index and remove it from the list.
+    def _delete_product(self):
+        self._print_products()
+        if not self.products_ref:
+            return
+        try:
+            index = int(input("Enter index of product to delete: ").strip())
+            if 0 <= index < len(self.products_ref):
+                removed = self.products_ref.pop(index)  # remove and return the item
+                print(f"'{removed['name']}' deleted.")
+            else:
+                print("Invalid index.")
+        except ValueError:
+            print("Please enter a valid number.")
+
+# ── Entry point ───────────────────────────────────────────────────────────────
+
+# Load existing products from disk into memory before starting the menu
+products = load_products("products.csv")
+
+menu = ProductMenu(products)
+menu.execute()
+
+# Once the user exits the menu, save the updated list back to disk
+save_products("products.csv", products)
+print("Products saved!")

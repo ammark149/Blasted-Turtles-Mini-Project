@@ -56,9 +56,9 @@ POSTGRES_PASSWORD=<SET_YOUR_POSTGRES_PASSWORD_HERE>
 
 **Note** if your chosen password is/has numbers, they need to be wrapped in quotation marks. eg. POSTGRES_PASSWORD="123"
 
-## Setup SSH key
+## Setup SSH key (Local Computer)
 
-We need an ssh key that does not require a passphrase. If you run this and it already exists **do not** overwrite it.
+Now on your local computer that you use to ssh into your vm instance. We need an ssh key that does not require a passphrase. If you run this and it already exists **do not** overwrite it.
 
 We are creating an ssh key specifically for our project so it should not mess with your other ssh keys.
 
@@ -94,7 +94,7 @@ Get-Content "$env:USERPROFILE\.ssh\mini_project_key.pub" | ssh centos@<YOUR_CENT
 
 We now want edit the config file in the .ssh directory, on Windows that's:
 
-C:\Users\Username\.ssh\config
+C:\Users\Username\\.ssh\config
 
 Inside the config file add this block:
 
