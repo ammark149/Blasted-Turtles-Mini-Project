@@ -10,14 +10,8 @@
         "title": "PRODUCT MENU",
         "1": "View all products",
         "2": "Add new products",
-        "3": "Edit products",
+        "3": "Update products",
         "4": "Delete products",
-        "0": "Back to main menu"
-    },
-    "ProductEditMenu": {
-        "title": "EDIT PRODUCT MENU",
-        "1": "Update item name",
-        "2": "Remove item",
         "0": "Back to main menu"
     },
     "OrderManagementMenu": {
