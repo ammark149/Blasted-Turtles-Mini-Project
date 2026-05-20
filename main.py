@@ -349,8 +349,21 @@ class OrderManagementMenu(Menu):
 
         for i, order in enumerate(app_instance.orders):
             print(f"[{i}] {order['customer_name']}")
+
+        #Fail safe to return to menu
+        user_input = input("Select order index to edit (or press Enter to cancel): ").strip()
+        if user_input == "":
+            print("Edit cancelled. Returning to Orders Menu.")
+            return
         
-        order_idx = self.get_valid_index(len(app_instance.orders), "Select order index to edit: ")
+        try:
+            order_idx = int(user_input)
+            if order_idx < 0 or order_idx >= len(app_instance.orders):
+                print("Invalid index.")
+                return
+        except ValueError:
+            print("Invalid input.")
+        
         selected_order = app_instance.orders[order_idx]
 
         while True:
@@ -384,7 +397,21 @@ class OrderManagementMenu(Menu):
         for i, order in enumerate(app_instance.orders):
             print(f"[{i}] {order['customer_name']} - {order['status']}")
 
-        order_idx = self.get_valid_index(len(app_instance.orders), "\nEnter order index to delete: ")
+        user_input = input("\nEnter order index to delete (or press Enter to cancel): ").strip()
+        
+        #Failsafe to return to main menu
+        if user_input == "":
+            print("Deletion cancelled. Returning to Orders Menu.")
+            return
+        try:
+            order_idx = int(user_input)
+            if order_idx < 0 or order_idx >= len(app_instance.orders):
+                print("Invalid index choice. Returning to menu.")
+                return
+        except ValueError:
+            print("Invalid input choice. Returning to menu.")
+            return
+
         deleted_order = app_instance.orders.pop(order_idx)
         print(f"Successfully deleted order for: {deleted_order['customer_name']}")
 
