@@ -21,6 +21,7 @@ def load_json(file_location):
 def load_data(file_location):
     file_path = BASE_DIR / file_location
     data = []
+    print(f"Loading data from {file_path}...")
     try:
         with open(file_path,'r') as f:
             reader = csv.DictReader(f)
@@ -33,6 +34,7 @@ def load_data(file_location):
 #Writing to files
 def save_data(file_location, data_list):
     file_path = BASE_DIR / file_location
+    print(f"Saving data to {file_path}...")
     if not data_list:
         return
     column_headers = data_list[0].keys() #Headers for top row

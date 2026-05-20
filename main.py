@@ -27,10 +27,10 @@ class CafeApp:
 
     def run(self):
         # Importing csv files and menu json
-        self.products = utils.load_data('products.csv')
-        self.couriers = utils.load_data('couriers.csv')
-        self.orders = utils.load_data('orders.csv')
-        menus_data = utils.load_json('Menus.json')
+        self.products = utils.load_data('./csv/products.csv')
+        self.couriers = utils.load_data('./csv/couriers.csv')
+        self.orders = utils.load_data('./csv/orders.csv')
+        menus_data = utils.load_json('./menu/Menus.json')
 
         for name_id, menu_dict in menus_data.items():
             self.menus[name_id] = Menu(menu_dict, name=menu_dict.get('title', name_id)) 
@@ -46,9 +46,9 @@ class CafeApp:
             self.main_menu.handle()
             break
         ## TO DO - Save chnages to products and couriers back to csv files when exiting
-        utils.save_data('products.csv', self.products)
-        utils.save_data('couriers.csv', self.couriers)
-        utils.save_data('orders.csv', self.orders)
+        utils.save_data('./csv/products.csv', self.products)
+        utils.save_data('./csv/couriers.csv', self.couriers)
+        utils.save_data('./csv/orders.csv', self.orders)
         print("Data saved. Goodbye!")
         
      
