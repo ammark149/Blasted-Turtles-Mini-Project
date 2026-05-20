@@ -19,6 +19,7 @@ class CafeApp:
         self.menus = {}
         self.main_menu = None
         self.product_menu = None    
+        self.courier_menu = None
         self.basket_menu = None
         self.product_edit_menu = None   
         self.order_management_menu = None
@@ -37,6 +38,7 @@ class CafeApp:
         # Initialize Child Menus
         self.main_menu = MainMenu(self.menus['MainMenu'].menu_dict, name=self.menus['MainMenu'].name, app=self)
         self.product_menu = ProductMenu(self.menus['ProductMenu'].menu_dict, name=self.menus['ProductMenu'].name, app=self)
+        self.courier_menu = CourierMenu(self.menus['CourierMenu'].menu_dict, name=self.menus['CourierMenu'].name, app=self)
         self.order_management_menu = OrderManagementMenu(self.menus['OrderManagementMenu'].menu_dict, name=self.menus['OrderManagementMenu'].name, app=self)
         self.order_edit_menu = Menu(self.menus['OrderEditMenu'].menu_dict, name=self.menus['OrderEditMenu'].name, app=self)
 
@@ -44,6 +46,8 @@ class CafeApp:
             self.main_menu.handle()
             break
         ## TO DO - Save chnages to products and couriers back to csv files when exiting
+        utils.save_data('products.csv', self.products)
+        utils.save_data('couriers.csv', self.couriers)
         utils.save_data('orders.csv', self.orders)
         print("Data saved. Goodbye!")
         
@@ -85,6 +89,16 @@ class Menu:
             print(f"Invalid choice. Enter one of: {', '.join(sorted(valid_options, key=int))}")
             self.display()
     
+    def get_valid_index(self, max_index, prompt="Select index: "):
+        while True:
+            try:
+                index = int(input(prompt))
+                if 0 <= index < max_index:
+                    return index
+                print(f"Invalid index. Enter a number between 0 and {max_index - 1}.")
+            except ValueError:
+                print("Please enter a valid number.")
+
     def handle(self, name=None):
         while True:
             self.display()
@@ -151,31 +165,92 @@ class ProductMenu(Menu):
 
     def _update_product(self, app_instance):
         self._view_products(app_instance)
-        try:
-            index = int(input("Enter index of product to update: "))
-            if 0 <= index < len(app_instance.products):
-                new_name = input("Enter new product name: ").strip()
-                if new_name:
-                    app_instance.products[index]['name'] = new_name
-                    print(f"Product updated to '{new_name}'.")
-                else:
-                    print("Name cannot be empty.")
-            else:
-                print("Invalid index.")
-        except ValueError:
-            print("Please enter a valid number.")
+        if not app_instance.products:
+            return
+        index = self.get_valid_index(len(app_instance.products), "Enter index of product to update: ")
+        new_name = input("Enter new product name: ").strip()
+        if new_name:
+            app_instance.products[index]['name'] = new_name
+            print(f"Product updated to '{new_name}'.")
+        else:
+            print("Name cannot be empty.")
 
     def _delete_product(self, app_instance):
         self._view_products(app_instance)
-        try:
-            index = int(input("Enter index of product to delete: "))
-            if 0 <= index < len(app_instance.products):
-                removed = app_instance.products.pop(index)
-                print(f"'{removed['name']}' deleted.")
-            else:
-                print("Invalid index.")
-        except ValueError:
-            print("Please enter a valid number.")
+        if not app_instance.products:
+            return
+        index = self.get_valid_index(len(app_instance.products), "Enter index of product to delete: ")
+        removed = app_instance.products.pop(index)
+        print(f"'{removed['name']}' deleted.")
+
+######## Courier Menu ###########
+class CourierMenu(Menu):
+    def handle(self, app_instance=None):
+        while True:
+            self.display()
+            choice = self.get_choice()
+
+            if choice == "0":
+                break
+            elif choice == "1":
+                self._view_couriers(app_instance)
+            elif choice == "2":
+                self._add_courier(app_instance)
+            elif choice == "3":
+                self._update_existing_courier(app_instance)
+            elif choice == "4":
+                self._delete_courier(app_instance)
+
+    def _view_couriers(self, app_instance):
+        if not app_instance.couriers:
+            print("No couriers found.")
+            return
+
+        print(f"\n{'ID':<3} | {'Name':<20} | {'Phone':<15}")
+        print("-" * 45)
+        for i, courier in enumerate(app_instance.couriers):
+            print(
+                f"[{i}] {courier.get('name',''):<20} | {courier.get('phone',''):<15}"
+            )
+
+    def _add_courier(self, app_instance):
+        name = input("Enter courier name: ").strip()
+        phone = input("Enter courier phone number: ").strip()
+        if name:
+            app_instance.couriers.append({
+                "name": name,
+                "phone": phone
+            })
+            print(f"Courier '{name}' added.")
+        else:
+            print("Name cannot be empty.")
+
+    def _update_existing_courier(self, app_instance):
+        self._view_couriers(app_instance)
+        if not app_instance.couriers:
+            return
+
+        index = self.get_valid_index(len(app_instance.couriers), "Enter courier index to update: ")
+        courier = app_instance.couriers[index]
+
+        new_name = input(f"Enter new courier name (leave blank to keep '{courier.get('name','')}'): ").strip()
+        new_phone = input(f"Enter new courier phone (leave blank to keep '{courier.get('phone','')}'): ").strip()
+
+        if new_name:
+            courier['name'] = new_name
+        if new_phone:
+            courier['phone'] = new_phone
+
+        print(f"Courier updated: {courier.get('name')} | {courier.get('phone','')}.")
+
+    def _delete_courier(self, app_instance):
+        self._view_couriers(app_instance)
+        if not app_instance.couriers:
+            return
+
+        index = self.get_valid_index(len(app_instance.couriers), "Enter courier index to delete: ")
+        removed = app_instance.couriers.pop(index)
+        print(f"Courier '{removed.get('name','')}' deleted.")
 
 ####### Order Management Menu ##########
 class OrderManagementMenu(Menu):
@@ -226,10 +301,13 @@ class OrderManagementMenu(Menu):
         items = input("Enter product indexes (e.g. 1,2,5): ")
 
         #Print couriers with index
+        if not app_instance.couriers:
+            print("No couriers available. Add a courier first.")
+            return
         print("\nAvailable Couriers:")
         for i, cour in enumerate(app_instance.couriers):
             print(f"[{i}] {cour['name']}")
-        courier_idx = input("Select courier index: ")
+        courier_idx = self.get_valid_index(len(app_instance.couriers), "Select courier index: ")
 
         #Create dictionary and append
         new_order = {
@@ -245,49 +323,55 @@ class OrderManagementMenu(Menu):
 
     #Choice 3 Updating Order Status
     def update_order_status(self, app_instance):
+        if not app_instance.orders:
+            print("No orders available.")
+            return
+
         for i, order in enumerate(app_instance.orders):
             print(f"[{i}] {order['customer_name']} - {order['status']}")
         
-        order_idx = int(input("Select order index to update: "))
+        order_idx = self.get_valid_index(len(app_instance.orders), "Select order index to update: ")
         
         #Shows status for orders
         statuses = ["preparing", "ready", "out for delivery", "delivered"]
         for i, stat in enumerate(statuses):
             print(f"[{i}] {stat}")
         
-        stat_idx = int(input("Select new status index: "))
+        stat_idx = self.get_valid_index(len(statuses), "Select new status index: ")
         app_instance.orders[order_idx]['status'] = statuses[stat_idx]
         print("Status updated!")
     
     #Choice 4 Editing Orders
     def edit_order(self, app_instance):
+        if not app_instance.orders:
+            print("No orders available.")
+            return
+
         for i, order in enumerate(app_instance.orders):
             print(f"[{i}] {order['customer_name']}")
         
-        try:
-            order_idx = int(input("Select order index to edit: "))
-            selected_order = app_instance.orders[order_idx]
-            
-            while True:
-                app_instance.order_edit_menu.display()
-                choice = app_instance.order_edit_menu.get_choice()
-                
-                if choice == "0": 
-                    break
-                elif choice == "1":
-                    selected_order['customer_name'] = input("Enter new name: ")
-                elif choice == "2":
-                    selected_order['customer_address'] = input("Enter new address: ")
-                elif choice == "3":
-                    selected_order['customer_phone'] = input("Enter new phone: ")
-                elif choice == "4":
-                    statuses = ["preparing", "ready", "out for delivery", "delivered"]
-                    for i, stat in enumerate(statuses): print(f"[{i}] {stat}")
-                    stat_idx = int(input("Select status index: "))
-                    selected_order['status'] = statuses[stat_idx]
-            print("Order updated!")
-        except (ValueError, IndexError):
-            print("Invalid selection.")
+        order_idx = self.get_valid_index(len(app_instance.orders), "Select order index to edit: ")
+        selected_order = app_instance.orders[order_idx]
+
+        while True:
+            app_instance.order_edit_menu.display()
+            choice = app_instance.order_edit_menu.get_choice()
+
+            if choice == "0":
+                break
+            elif choice == "1":
+                selected_order['customer_name'] = input("Enter new name: ")
+            elif choice == "2":
+                selected_order['customer_address'] = input("Enter new address: ")
+            elif choice == "3":
+                selected_order['customer_phone'] = input("Enter new phone: ")
+            elif choice == "4":
+                statuses = ["preparing", "ready", "out for delivery", "delivered"]
+                for i, stat in enumerate(statuses):
+                    print(f"[{i}] {stat}")
+                stat_idx = self.get_valid_index(len(statuses), "Select status index: ")
+                selected_order['status'] = statuses[stat_idx]
+        print("Order updated!")
     
     #Choice 5 Deleting Orders
     def delete_order(self, app_instance):
@@ -300,13 +384,9 @@ class OrderManagementMenu(Menu):
         for i, order in enumerate(app_instance.orders):
             print(f"[{i}] {order['customer_name']} - {order['status']}")
 
-        try:
-            order_idx = int(input("\nEnter order index to delete: "))
-            deleted_order = app_instance.orders.pop(order_idx)
-            print(f"Successfully deleted order for: {deleted_order['customer_name']}")
-            
-        except (ValueError, IndexError):
-            print("Invalid index. No order was deleted.")
+        order_idx = self.get_valid_index(len(app_instance.orders), "\nEnter order index to delete: ")
+        deleted_order = app_instance.orders.pop(order_idx)
+        print(f"Successfully deleted order for: {deleted_order['customer_name']}")
 
 
 # ################# MAIN APPLICATION LOOP #################

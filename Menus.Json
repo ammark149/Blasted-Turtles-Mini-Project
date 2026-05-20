@@ -14,6 +14,14 @@
         "4": "Delete products",
         "0": "Back to main menu"
     },
+    "CourierMenu": {
+        "title": "COURIER MENU",
+        "1": "View all couriers",
+        "2": "Add new courier",
+        "3": "Update existing courier",
+        "4": "Delete courier",
+        "0": "Back to main menu"
+    },
     "OrderManagementMenu": {
         "title": "ORDER MANAGEMENT",
         "1": "View Orders",
