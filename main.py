@@ -2,6 +2,7 @@
 """Mini project CLI: cafe menu and basket management"""
 import os
 import json
+from secrets import choice
 import utils
 
 
@@ -18,6 +19,7 @@ class CafeApp:
         self.menus = {}
         self.main_menu = None
         self.product_menu = None    
+        self.courier_menu = None
         self.basket_menu = None
         self.product_edit_menu = None   
         self.order_management_menu = None
@@ -25,49 +27,41 @@ class CafeApp:
 
     def run(self):
         # Importing csv files and menu json
-        self.products = utils.load_data('products.csv')
-        self.couriers = utils.load_data('couriers.csv')
-        self.orders = utils.load_data('orders.csv')
-        menus_data = utils.load_json('Menus.json')
+        self.products = utils.load_data('./csv/products.csv')
+        self.couriers = utils.load_data('./csv/couriers.csv')
+        self.orders = utils.load_data('./csv/orders.csv')
+        menus_data = utils.load_json('./menu/Menus.json')
 
         for name_id, menu_dict in menus_data.items():
             self.menus[name_id] = Menu(menu_dict, name=menu_dict.get('title', name_id)) 
 
         # Initialize Child Menus
-        self.main_menu = MainMenu(self.menus['MainMenu'].menu_dict, name=self.menus['MainMenu'].name) 
-        self.product_menu = ProductMenu(self.menus['ProductMenu'].menu_dict, name=self.menus['ProductMenu'].name)
-        self.basket_menu = BasketMenu(self.menus['BasketMenu'].menu_dict, name=self.menus['BasketMenu'].name)
-        self.product_edit_menu = ProductEditMenu(self.menus['ProductEditMenu'].menu_dict, name=self.menus['ProductEditMenu'].name)
-        self.order_management_menu = OrderManagementMenu(self.menus['OrderManagementMenu'].menu_dict, name=self.menus['OrderManagementMenu'].name)
-        self.order_edit_menu = Menu(self.menus['OrderEditMenu'].menu_dict, name=self.menus['OrderEditMenu'].name)
+        self.main_menu = MainMenu(self.menus['MainMenu'].menu_dict, name=self.menus['MainMenu'].name, app=self)
+        self.product_menu = ProductMenu(self.menus['ProductMenu'].menu_dict, name=self.menus['ProductMenu'].name, app=self)
+        self.courier_menu = CourierMenu(self.menus['CourierMenu'].menu_dict, name=self.menus['CourierMenu'].name, app=self)
+        self.order_management_menu = OrderManagementMenu(self.menus['OrderManagementMenu'].menu_dict, name=self.menus['OrderManagementMenu'].name, app=self)
+        self.order_edit_menu = Menu(self.menus['OrderEditMenu'].menu_dict, name=self.menus['OrderEditMenu'].name, app=self)
 
         while True:
-            choice = self.main_menu.handle() 
-            
-            if choice == "0":
-                utils.save_data('orders.csv', self.orders)
-                print("Data saved. Goodbye!")
-                break
-            elif choice == "1":
-                self.product_menu.handle(self)
-            elif choice == "2":
-                print("Add product logic goes here") 
-            elif choice == "3":
-                self.product_edit_menu.handle(self)
-            elif choice == "4":
-                self.basket_menu.handle()
-            elif choice == "5": 
-                self.order_management_menu.handle(self)
-   
+            self.main_menu.handle()
+            break
+        ## TO DO - Save chnages to products and couriers back to csv files when exiting
+        utils.save_data('./csv/products.csv', self.products)
+        utils.save_data('./csv/couriers.csv', self.couriers)
+        utils.save_data('./csv/orders.csv', self.orders)
+        print("Data saved. Goodbye!")
+        
      
 
 
 ############### MENU #################
 class Menu:
-    def __init__(self, menu_dict=None, name=None):
+    def __init__(self, menu_dict=None, name=None, app=None):
+          
         self.name = name
         self.menu_dict = menu_dict or {}
         self.title = self.menu_dict.get("title", "Menu")
+        self.app = app
 
     def __str__(self):
         result = "" 
@@ -95,27 +89,45 @@ class Menu:
             print(f"Invalid choice. Enter one of: {', '.join(sorted(valid_options, key=int))}")
             self.display()
     
-    def handle(self, name=None):
-        self.display()
-        return self.get_choice()
+    def get_valid_index(self, max_index, prompt="Select index: "):
+        while True:
+            try:
+                index = int(input(prompt))
+                if 0 <= index < max_index:
+                    return index
+                print(f"Invalid index. Enter a number between 0 and {max_index - 1}.")
+            except ValueError:
+                print("Please enter a valid number.")
 
+    def handle(self, name=None):
+        while True:
+            self.display()
+            choice = self.get_choice()
+            if choice == "0":
+                return
+            self.route(choice)
+    
+    def route(self, choice):
+        print(f"Selected option {choice} - {self.menu_dict.get(choice, 'Unknown Option')}")
 
 class MainMenu(Menu):
     pass
-        # print(f"Main menu choice: {choice}")
-        # if choice == "0":
-        #     print("Goodbye.")
-        #     #1break
-        # elif choice == "1":
-        #     self.product_menu.handle()
-        # elif choice == "2":
-        #     self.basket_menu.handle()
-        # elif choice == "3":
-        #     self.product_edit_menu.handle()
-        # elif choice == "4":
-        #     self.order_management_menu.handle()
-        # elif choice == "5":
-        #     self.order_edit_menu.handle()
+    def handle(self, name=None):
+    #     pass
+        while True:
+            self.display()
+            choice = self.get_choice()
+            if choice == "0":
+                return
+            self.route(choice)
+
+    def route(self, choice):
+            if choice == "1":
+                self.app.product_menu.handle(self.app)
+            elif choice == "2":
+                self.app.courier_menu.handle(self.app)
+            elif choice == "3":
+                self.app.order_management_menu.handle(self.app)
 
 ########## Product Menu ###########
 class ProductMenu(Menu):
@@ -130,6 +142,10 @@ class ProductMenu(Menu):
                 self._view_products(app_instance)
             elif choice == "2":
                 self._create_product(app_instance)
+            elif choice == "3":
+                self._update_product(app_instance)
+            elif choice == "4":
+                self._delete_product(app_instance)
 
     def _view_products(self, app_instance):
         if not app_instance.products:
@@ -147,68 +163,28 @@ class ProductMenu(Menu):
         else:
             print("Product name cannot be empty.")
 
+    def _update_product(self, app_instance):
+        self._view_products(app_instance)
+        if not app_instance.products:
+            return
+        index = self.get_valid_index(len(app_instance.products), "Enter index of product to update: ")
+        new_name = input("Enter new product name: ").strip()
+        if new_name:
+            app_instance.products[index]['name'] = new_name
+            print(f"Product updated to '{new_name}'.")
+        else:
+            print("Name cannot be empty.")
 
+    def _delete_product(self, app_instance):
+        self._view_products(app_instance)
+        if not app_instance.products:
+            return
+        index = self.get_valid_index(len(app_instance.products), "Enter index of product to delete: ")
+        removed = app_instance.products.pop(index)
+        print(f"'{removed['name']}' deleted.")
 
-
-
-
-# def display_items(items, title):
-#     """Display a list of items with indices."""
-#     print(f"\n{title}:")
-#     if not items:
-#         print("(none)")
-#     else:
-#         for idx, item in enumerate(items):
-#             print(f"{idx}: {item}")
-
-# def handle_cafe_menu(cafe_items, basket):
-#     """Handle the cafe menu for ordering."""
-#     while True:
-#         print_cafe_menu(cafe_items)
-#         if not cafe_items:
-#             choice = get_choice("No items to select, enter 0 to return", {"0"})
-#             if choice == "0":
-#                 break
-#             continue
- 
-#         selected = get_numeric_choice("Select item number to add to basket", 0, len(cafe_items))
-#         if selected == 0:
-#             break
- 
-#         item = cafe_items[selected - 1]
-#         if confirm(f"Add '{item}' to basket? (y/n)"):
-#             basket.append(item)
-#             print(f"'{item}' added to basket.")
-#         else:
-#             print("Not added.")
-class BasketMenu(Menu):
-    pass
-
-# def handle_basket_menu(basket):
-#     while True:
-#         print_basket_menu()
-#         choice = get_choice("Select main option", {"0", "1", "2", "3"})
-
-#         if choice == "0":
-#             break
- 
-#         elif choice == "1":
-#             display_items(basket, "Items in your basket")
- 
-#         elif choice == "2":
-#             if not basket:
-#                 print("Your basket is empty")
-#                 continue
-#             display_items(basket, "Select item to remove")
-#             idx = get_numeric_choice("Enter collerating index to remove", 0, len(basket) -1)  
-#             removed = basket.pop(idx)
-#             print(f"Removed '{removed}' from your basket.")  
- 
-#         elif choice == "3":
-#             if confirm("Are you you want to clear the entire basket? (y/n)"):
-#                 basket.clear()
-#                 print("Basket Cleared.")
-class ProductEditMenu(Menu):
+######## Courier Menu ###########
+class CourierMenu(Menu):
     def handle(self, app_instance=None):
         while True:
             self.display()
@@ -217,106 +193,68 @@ class ProductEditMenu(Menu):
             if choice == "0":
                 break
             elif choice == "1":
-                self._update_product(app_instance)
+                self._view_couriers(app_instance)
             elif choice == "2":
-                self._delete_product(app_instance)
+                self._add_courier(app_instance)
+            elif choice == "3":
+                self._update_existing_courier(app_instance)
+            elif choice == "4":
+                self._delete_courier(app_instance)
 
-    def _view_products(self, app_instance):
-        if not app_instance.products:
-            print("No products found.")
+    def _view_couriers(self, app_instance):
+        if not app_instance.couriers:
+            print("No couriers found.")
             return
-        print("\n--- Products ---")
-        for i, product in enumerate(app_instance.products):
-            print(f"  [{i}] {product['name']}")
 
-    def _update_product(self, app_instance):
-        self._view_products(app_instance)
-        try:
-            index = int(input("Enter index of product to update: "))
-            if 0 <= index < len(app_instance.products):
-                new_name = input("Enter new product name: ").strip()
-                if new_name:
-                    app_instance.products[index]['name'] = new_name
-                    print(f"Product updated to '{new_name}'.")
-                else:
-                    print("Name cannot be empty.")
-            else:
-                print("Invalid index.")
-        except ValueError:
-            print("Please enter a valid number.")
+        print(f"\n{'ID':<3} | {'Name':<20} | {'Phone':<15}")
+        print("-" * 45)
+        for i, courier in enumerate(app_instance.couriers):
+            print(
+                f"[{i}] {courier.get('name',''):<20} | {courier.get('phone',''):<15}"
+            )
 
-    def _delete_product(self, app_instance):
-        self._view_products(app_instance)
-        try:
-            index = int(input("Enter index of product to delete: "))
-            if 0 <= index < len(app_instance.products):
-                removed = app_instance.products.pop(index)
-                print(f"'{removed['name']}' deleted.")
-            else:
-                print("Invalid index.")
-        except ValueError:
-            print("Please enter a valid number.")
+    def _add_courier(self, app_instance):
+        name = input("Enter courier name: ").strip()
+        phone = input("Enter courier phone number: ").strip()
+        if name:
+            app_instance.couriers.append({
+                "name": name,
+                "phone": phone
+            })
+            print(f"Courier '{name}' added.")
+        else:
+            print("Name cannot be empty.")
 
+    def _update_existing_courier(self, app_instance):
+        self._view_couriers(app_instance)
+        if not app_instance.couriers:
+            return
 
+        index = self.get_valid_index(len(app_instance.couriers), "Enter courier index to update: ")
+        courier = app_instance.couriers[index]
 
+        new_name = input(f"Enter new courier name (leave blank to keep '{courier.get('name','')}'): ").strip()
+        new_phone = input(f"Enter new courier phone (leave blank to keep '{courier.get('phone','')}'): ").strip()
 
+        if new_name:
+            courier['name'] = new_name
+        if new_phone:
+            courier['phone'] = new_phone
 
+        print(f"Courier updated: {courier.get('name')} | {courier.get('phone','')}.")
 
+    def _delete_courier(self, app_instance):
+        self._view_couriers(app_instance)
+        if not app_instance.couriers:
+            return
 
+        index = self.get_valid_index(len(app_instance.couriers), "Enter courier index to delete: ")
+        removed = app_instance.couriers.pop(index)
+        print(f"Courier '{removed.get('name','')}' deleted.")
 
-
-
-
-
-# def handle_add_item(cafe_items):
-#     """Handle adding a new unique item to the cafe menu."""
-#     new_item = input("Enter new cafe item name: ").strip()
-#     if new_item:
-#         if new_item in cafe_items:
-#             print(f"'{new_item}' is already in the cafe menu.")
-#         else:
-#             cafe_items.append(new_item)
-#             print(f"'{new_item}' added to cafe menu.")
-#     else:
-#         print("No item name entered.")
- 
- 
-# def handle_edit_menu(cafe_items):
-#     """Handle the edit menu for updating or removing items."""
-#     while True:
-#         print_edit_menu()
-#         edit_choice = input("Select edit option: ").strip()
- 
-#         if edit_choice == "0":
-#             break
- 
-#         elif edit_choice == "1":
-#             if not cafe_items:
-#                 print("No items to update.")
-#                 continue
-#             display_items(cafe_items, "Current cafe items")
-#             idx = get_numeric_choice("Enter index to update", 0, len(cafe_items) - 1)
-#             new_name = input("Enter new name: ").strip()
-#             if new_name:
-#                 old_name = cafe_items[idx]
-#                 cafe_items[idx] = new_name
-#                 print(f"Updated '{old_name}' to '{new_name}'")
-#             else:
-#                 print("No new name entered.")
- 
-#         elif edit_choice == "2":
-#             if not cafe_items:
-#                 print("No items to remove.")
-#                 continue
-#             display_items(cafe_items, "Current cafe items")
-#             idx = get_numeric_choice("Enter index to remove", 0, len(cafe_items) - 1)
-#             removed = cafe_items.pop(idx)
-#             print(f"Removed '{removed}' from cafe menu.")
- 
-#         else:
-#             print("Invalid edit menu choice.")
+####### Order Management Menu ##########
 class OrderManagementMenu(Menu):
-    def handle(self, app_instance):
+    def handle(self, app_instance=None):
         while True:
             self.display()
             choice = self.get_choice()
@@ -363,10 +301,13 @@ class OrderManagementMenu(Menu):
         items = input("Enter product indexes (e.g. 1,2,5): ")
 
         #Print couriers with index
+        if not app_instance.couriers:
+            print("No couriers available. Add a courier first.")
+            return
         print("\nAvailable Couriers:")
         for i, cour in enumerate(app_instance.couriers):
             print(f"[{i}] {cour['name']}")
-        courier_idx = input("Select courier index: ")
+        courier_idx = self.get_valid_index(len(app_instance.couriers), "Select courier index: ")
 
         #Create dictionary and append
         new_order = {
@@ -382,48 +323,55 @@ class OrderManagementMenu(Menu):
 
     #Choice 3 Updating Order Status
     def update_order_status(self, app_instance):
+        if not app_instance.orders:
+            print("No orders available.")
+            return
+
         for i, order in enumerate(app_instance.orders):
             print(f"[{i}] {order['customer_name']} - {order['status']}")
         
-        order_idx = int(input("Select order index to update: "))
+        order_idx = self.get_valid_index(len(app_instance.orders), "Select order index to update: ")
         
         #Shows status for orders
         statuses = ["preparing", "ready", "out for delivery", "delivered"]
         for i, stat in enumerate(statuses):
             print(f"[{i}] {stat}")
         
-        stat_idx = int(input("Select new status index: "))
+        stat_idx = self.get_valid_index(len(statuses), "Select new status index: ")
         app_instance.orders[order_idx]['status'] = statuses[stat_idx]
         print("Status updated!")
     
     #Choice 4 Editing Orders
     def edit_order(self, app_instance):
+        if not app_instance.orders:
+            print("No orders available.")
+            return
+
         for i, order in enumerate(app_instance.orders):
             print(f"[{i}] {order['customer_name']}")
         
-        try:
-            order_idx = int(input("Select order index to edit: "))
-            selected_order = app_instance.orders[order_idx]
-            
-            while True:
-                choice = app_instance.order_edit_menu.handle() 
-                
-                if choice == "0": 
-                    break
-                elif choice == "1":
-                    selected_order['customer_name'] = input("Enter new name: ")
-                elif choice == "2":
-                    selected_order['customer_address'] = input("Enter new address: ")
-                elif choice == "3":
-                    selected_order['customer_phone'] = input("Enter new phone: ")
-                elif choice == "4":
-                    statuses = ["preparing", "ready", "out for delivery", "delivered"]
-                    for i, stat in enumerate(statuses): print(f"[{i}] {stat}")
-                    stat_idx = int(input("Select status index: "))
-                    selected_order['status'] = statuses[stat_idx]
-            print("Order updated!")
-        except (ValueError, IndexError):
-            print("Invalid selection.")
+        order_idx = self.get_valid_index(len(app_instance.orders), "Select order index to edit: ")
+        selected_order = app_instance.orders[order_idx]
+
+        while True:
+            app_instance.order_edit_menu.display()
+            choice = app_instance.order_edit_menu.get_choice()
+
+            if choice == "0":
+                break
+            elif choice == "1":
+                selected_order['customer_name'] = input("Enter new name: ")
+            elif choice == "2":
+                selected_order['customer_address'] = input("Enter new address: ")
+            elif choice == "3":
+                selected_order['customer_phone'] = input("Enter new phone: ")
+            elif choice == "4":
+                statuses = ["preparing", "ready", "out for delivery", "delivered"]
+                for i, stat in enumerate(statuses):
+                    print(f"[{i}] {stat}")
+                stat_idx = self.get_valid_index(len(statuses), "Select status index: ")
+                selected_order['status'] = statuses[stat_idx]
+        print("Order updated!")
     
     #Choice 5 Deleting Orders
     def delete_order(self, app_instance):
@@ -436,13 +384,9 @@ class OrderManagementMenu(Menu):
         for i, order in enumerate(app_instance.orders):
             print(f"[{i}] {order['customer_name']} - {order['status']}")
 
-        try:
-            order_idx = int(input("\nEnter order index to delete: "))
-            deleted_order = app_instance.orders.pop(order_idx)
-            print(f"Successfully deleted order for: {deleted_order['customer_name']}")
-            
-        except (ValueError, IndexError):
-            print("Invalid index. No order was deleted.")
+        order_idx = self.get_valid_index(len(app_instance.orders), "\nEnter order index to delete: ")
+        deleted_order = app_instance.orders.pop(order_idx)
+        print(f"Successfully deleted order for: {deleted_order['customer_name']}")
 
 
 # ################# MAIN APPLICATION LOOP #################
