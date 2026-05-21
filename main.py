@@ -17,6 +17,7 @@ class CafeApp:
         self.couriers = []
         self.orders = []
         self.menus = {}
+        self.inventory = []
         self.main_menu = None
         self.product_menu = None    
         self.courier_menu = None
@@ -30,6 +31,7 @@ class CafeApp:
         self.products = utils.load_data('./csv/products.csv')
         self.couriers = utils.load_data('./csv/couriers.csv')
         self.orders = utils.load_data('./csv/orders.csv')
+        self.inventory = utils.load_data('./csv/inventory.csv')
         menus_data = utils.load_json('./menu/Menus.json')
 
         for name_id, menu_dict in menus_data.items():
@@ -49,6 +51,7 @@ class CafeApp:
         utils.save_data('./csv/products.csv', self.products)
         utils.save_data('./csv/couriers.csv', self.couriers)
         utils.save_data('./csv/orders.csv', self.orders)
+        utils.save_data('./csv/inventory.csv', self.inventory)
         print("Data saved. Goodbye!")
         
      
@@ -146,6 +149,10 @@ class ProductMenu(Menu):
                 self._update_product(app_instance)
             elif choice == "4":
                 self._delete_product(app_instance)
+            elif choice == "5":                          # NEW
+                self._view_inventory(app_instance)       # NEW
+            elif choice == "6":                          # NEW
+                self._update_stock(app_instance)         # NEW
 
     def _view_products(self, app_instance):
         if not app_instance.products:
@@ -182,6 +189,27 @@ class ProductMenu(Menu):
         index = self.get_valid_index(len(app_instance.products), "Enter index of product to delete: ")
         removed = app_instance.products.pop(index)
         print(f"'{removed['name']}' deleted.")
+
+    def _view_inventory(self, app_instance):       # NEW
+        if not app_instance.inventory:
+            print("No inventory found.")
+            return
+        print(f"\n{'ID':<5} {'Name':<25} {'Price':<8} {'Sold':<8} {'Stock':<8}")
+        print("-" * 55)
+        for item in app_instance.inventory:
+            print(f"  {item['id']:<5} {item['name']:<25} £{float(item['price']):<7.2f} {item['sold']:<8} {item['total_stock']:<8}")
+
+    def _update_stock(self, app_instance):          #NEW
+        self._view_inventory(app_instance)
+        if not app_instance.inventory:
+            return
+        index = self.get_valid_index(len(app_instance.inventory), "Enter index of item to update stock: ")
+        new_stock = input(f"Enter new stock level for '{app_instance.inventory[index]['name']}': ").strip()
+        if new_stock.isdigit():
+            app_instance.inventory[index]['total_stock'] = new_stock
+            print("Stock updated.")
+        else:
+            print("Please enter a valid number.")
 
 ######## Courier Menu ###########
 class CourierMenu(Menu):

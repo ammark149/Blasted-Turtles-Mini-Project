@@ -12,6 +12,8 @@
         "2": "Add new products",
         "3": "Update products",
         "4": "Delete products",
+        "5": "View inventory",
+        "6": "Update stock level",
         "0": "Back to main menu"
     },
     "CourierMenu": {
