@@ -21,11 +21,15 @@ from dotenv import load_dotenv
 # Load variables from the .env file into os.environ
 load_dotenv()
 
+
 # The folder where this script lives — used to find the SQL files
 SCRIPT_DIR = Path(__file__).resolve().parent
 
 # Path on the remote server where docker-compose.yml lives
 PROJECT_DIR = "/home/centos/mini_project"
+
+# file_path_name = SCRIPT_DIR / "REMOTE_USER"
+# print(os.getenv(file_path_name))
 
 
 # ---------------------------------------------------------------------------
